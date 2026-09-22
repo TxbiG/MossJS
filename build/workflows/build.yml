@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout CMoss
+        uses: actions/checkout@v4
+        with:
+          path: CMoss
+
+      - name: Checkout Moss (dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: TxbiG/Moss
+          path: Moss
+          submodules: recursive
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            libgl1-mesa-dev \
+            libvulkan-dev \
+            mesa-vulkan-drivers \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+            libwayland-dev libxkbcommon-dev
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        working-directory: CMoss
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022" -A x64
+          -DMOSS_FRAMEWORK_DIR=${{ github.workspace }}/Moss
+
+      - name: Configure (Linux/macOS)
+        if: runner.os != 'Windows'
+        working-directory: CMoss
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DMOSS_FRAMEWORK_DIR=${{ github.workspace }}/Moss
+
+      - name: Build CMoss
+        working-directory: CMoss
+        run: cmake --build build --config Debug
+
+      # Smoke test: link against the BUILT library, not just the headers,
+      # to catch ABI/symbol issues a clean compile wouldn't. Add a minimal
+      # smoketest/main.c that #includes CMoss's public headers and calls
+      # a few representative functions, then uncomment below.
+      #
+      # - name: Build smoke test
+      #   shell: bash
+      #   run: |
+      #     cc CMoss/smoketest/main.c -ICMoss/include -LCMoss/build -lCMoss -o smoketest_bin
+      #     ./smoketest_bin
