@@ -1,5 +1,5 @@
 # MossJS
-MossJS is a JavaScript binding for [MossFramework](https://github.com/TxbiG/Moss).
+MossJS is a browser/WebAssembly binding for [MossFramework](https://github.com/TxbiG/Moss).
 
 ## Documentation
 
