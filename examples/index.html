@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Moss Web</title>
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #111;
+        }
+
+        #moss {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="moss"></canvas>
+
+    <script type="module">
+        import createMoss from "../build/JSMoss.js";
+
+        const Moss = await createMoss();
+
+        const canvas = document.querySelector("#moss");
+        const app = new Moss.WebApplication("moss", 1280, 720);
+
+        app.attachCanvas(canvas);
+        app.resizeToDisplaySize();
+
+        let previous = performance.now();
+
+        function frame(now) {
+            const dt = Math.min((now - previous) / 1000, 0.1);
+            previous = now;
+
+            app.pollInput();
+            app.update(dt);
+            app.render();
+
+            requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    </script>
+</body>
+</html>
