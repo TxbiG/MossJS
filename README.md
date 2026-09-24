@@ -17,7 +17,7 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 - [API cheatsheet](docs/API_Cheatsheet.md)
 
 ## Compiling
-- C#
+- JavaScript
 - C++ 17
 
 ## License
