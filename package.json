@@ -1,16 +1,18 @@
 {
-  "name": "@moss-engine/moss-web",
-  "version": "0.1.0",
-  "description": "WebAssembly/JavaScript bindings for the Moss game framework",
+  "name": "@moss-engine/mossjs",
+  "version": "0.4.0",
+  "description": "Browser/WebAssembly bindings for the Moss game framework",
   "type": "module",
-  "main": "dist/moss-web.js",
-  "module": "dist/moss-web.js",
+  "types": "./web/moss.d.ts",
   "exports": {
-    ".": "./dist/moss-web.js"
+    ".": "./web/moss.js"
   },
   "scripts": {
-    "build": "emcmake cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel",
-    "build:debug": "emcmake cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug && cmake --build build-debug --parallel",
+    "build": "npm run build:wasm",
+    "build:wasm": "emcmake cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMOSSJS_SINGLE_FILE=OFF && cmake --build build --parallel",
+    "build:single": "emcmake cmake -S . -B build-single -DCMAKE_BUILD_TYPE=Release -DMOSSJS_SINGLE_FILE=ON && cmake --build build-single --parallel",
+    "build:debug": "emcmake cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug -DMOSSJS_ASSERTIONS=ON && cmake --build build-debug --parallel",
+    "build:threads": "emcmake cmake -S . -B build-threads -DCMAKE_BUILD_TYPE=Release -DMOSSJS_THREADS=ON && cmake --build build-threads --parallel",
     "serve": "python -m http.server 8080 -d examples"
   },
   "engines": {
