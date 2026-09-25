@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MossJS subsystem example</title>
+    <style>
+        html, body { margin: 0; min-height: 100%; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+        body { display: grid; place-items: center; }
+        #wrap { position: relative; width: min(96vw, 1280px); }
+        #game { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+        #status { position: absolute; left: 12px; top: 12px; padding: 8px 10px; background: rgba(0,0,0,.65); border-radius: 6px; }
+    </style>
+</head>
+<body>
+<div id="wrap">
+    <canvas id="game" width="1280" height="720"></canvas>
+    <div id="status">Loading MossJS…</div>
+</div>
+
+<script type="module">
+    import createMossModule from "../dist/MossJS.js";
+    import { createMoss } from "../web/moss.js";
+
+    const Moss = await createMoss(createMossModule, { persistentStorage: true });
+    const canvas = document.querySelector("#game");
+    const status = document.querySelector("#status");
+    const app = Moss.createApplication({ canvas, width: 1280, height: 720, title: "MossJS" });
+
+    const renderer = Moss.Renderer.create(app, { clearColor: [0.035, 0.045, 0.06, 1] });
+    const physics = Moss.createPhysicsWorld({ gravity: [0, -9.81, 0] });
+    const ball = physics.createSphere({ position: [0, 3, 0], radius: 0.4, restitution: 0.65 });
+    const gui = Moss.createGUI();
+    gui.text("MossJS Web subsystems are active", { style: { position: "absolute", left: "12px", bottom: "12px", color: "white" } });
+
+    const audio = Moss.createAudio();
+    gui.button("Enable Audio", async () => {
+        await audio.resume();
+        status.textContent = "Audio enabled · Physics active · WebGL2 active";
+    }, { style: { position: "absolute", right: "12px", top: "12px" } });
+
+    Moss.start(app, (dt) => {
+        physics.step(dt);
+        renderer.beginFrame();
+        renderer.endFrame();
+        void physics.body(ball);
+    });
+</script>
+</body>
+</html>

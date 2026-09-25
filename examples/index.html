@@ -3,51 +3,35 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Moss Web</title>
+    <title>MossJS Web</title>
     <style>
-        html, body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #111;
-        }
-
-        #moss {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
+        html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #111; }
+        #moss { display: block; width: 100vw; height: 100vh; outline: none; }
     </style>
 </head>
 <body>
-    <canvas id="moss"></canvas>
+    <canvas id="moss" tabindex="0"></canvas>
 
     <script type="module">
-        import createMoss from "../build/JSMoss.js";
+        import createMossModule from "../dist/MossJS.js";
+        import { createMoss } from "../web/moss.js";
 
-        const Moss = await createMoss();
-
+        const Moss = await createMoss(createMossModule);
         const canvas = document.querySelector("#moss");
-        const app = new Moss.WebApplication("moss", 1280, 720);
 
-        app.attachCanvas(canvas);
-        app.resizeToDisplaySize();
+        const app = new Moss.Application({
+            title: "MossJS Web",
+            width: 1280,
+            height: 720,
+            canvas
+        });
 
-        let previous = performance.now();
+        canvas.addEventListener("click", () => app.focus());
 
-        function frame(now) {
-            const dt = Math.min((now - previous) / 1000, 0.1);
-            previous = now;
-
-            app.pollInput();
-            app.update(dt);
-            app.render();
-
-            requestAnimationFrame(frame);
-        }
-
-        requestAnimationFrame(frame);
+        Moss.start(app, (dt) => {
+            // Shared Moss game update/render code goes here.
+            void dt;
+        });
     </script>
 </body>
 </html>
