@@ -1,3 +1,4 @@
+[![Build](https://github.com/TxbiG/MossJS/actions/workflows/build.yml/badge.svg)](https://github.com/TxbiG/MossJS/actions/workflows/build.yml)
 # MossJS
 MossJS is a browser/WebAssembly binding for [MossFramework](https://github.com/TxbiG/Moss).
 
