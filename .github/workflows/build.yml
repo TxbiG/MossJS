@@ -6,68 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout MossJS
-        uses: actions/checkout@v4
-        with:
-          path: MossJS
-
-      - name: Checkout Moss (dependency)
-        uses: actions/checkout@v4
-        with:
-          repository: TxbiG/Moss
-          path: Moss
-          submodules: recursive
-
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            ninja-build \
-            libgl1-mesa-dev \
-            libvulkan-dev \
-            mesa-vulkan-drivers \
-            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-            libwayland-dev libxkbcommon-dev
-
-      - name: Install macOS dependencies
-        if: runner.os == 'macOS'
-        run: brew install ninja
-
-      - name: Configure (Windows)
-        if: runner.os == 'Windows'
-        working-directory: MossJS
-        run: >
-          cmake -S . -B build
-          -G "Visual Studio 17 2022" -A x64
-          -DMOSS_FRAMEWORK_DIR=${{ github.workspace }}/Moss
-
-      - name: Configure (Linux/macOS)
-        if: runner.os != 'Windows'
-        working-directory: MossJS
-        run: >
-          cmake -S . -B build
-          -G Ninja
-          -DCMAKE_BUILD_TYPE=Debug
-          -DMOSS_FRAMEWORK_DIR=${{ github.workspace }}/Moss
-
-      - name: Build MossJS
-        working-directory: MossJS
-        run: cmake --build build --config Debug
-
-
   wasm:
-    name: WebAssembly
-
+    name: Build WebAssembly (Web Games)
     runs-on: ubuntu-latest
 
     steps:
@@ -91,17 +31,18 @@ jobs:
           emcc --version
           em++ --version
 
-      - name: Configure
+      - name: Configure CMake
         working-directory: MossJS
         shell: bash
         run: |
           emcmake cmake \
             -S . \
             -B build-wasm \
+            -G "Ninja" \
             -DCMAKE_BUILD_TYPE=Release \
             -DMOSS_FRAMEWORK_DIR="${GITHUB_WORKSPACE}/Moss"
 
-      - name: Build
+      - name: Build WebAssembly
         working-directory: MossJS
         run: cmake --build build-wasm --parallel
 
@@ -110,5 +51,5 @@ jobs:
         with:
           name: MossJS-WASM
           path: |
-            MossJS/build-wasm/*.js
-            MossJS/build-wasm/*.wasm
+            MossJS/dist/*.js
+            MossJS/dist/*.wasm
