@@ -2,6 +2,17 @@
 # MossJS
 MossJS is a browser/WebAssembly binding for [MossFramework](https://github.com/TxbiG/Moss).
 
+
+## Live Demos & Benchmarks
+
+Explore the interactive WebAssembly build configurations of the Moss Framework live in your browser:
+| Environment | Purpose | Live Link |
+| :--- | :--- | :--- |
+| **Graphical Demos** | Interactive application feature examples. | [Examples](https://github.io) |
+| **Performance** | WebAssembly engine speed & execution benchmarks. | [Benchmarks](https://github.ioperformance/) |
+> **Note:** These environments require a modern browser supporting WebAssembly multi-threading features (`COOP` and `COEP` security headers are handled natively by our GitHub Pages pipeline).
+
+
 ## Documentation
 
 Comprehensive documentation is available in the [`docs/`](./docs) directory:
