@@ -7,7 +7,7 @@ on:
 
 jobs:
   wasm:
-    name: Build WebAssembly (Web Games)
+    name: Build WebAssembly
     runs-on: ubuntu-latest
 
     steps:
