@@ -31,6 +31,16 @@ jobs:
           emcc --version
           em++ --version
 
+      # === ADDED DEBUGGING STEP HERE ===
+      - name: Debug Directory Structure
+        working-directory: MossJS
+        run: |
+          echo "=== Root Contents ==="
+          ls -la
+          echo "=== Src Contents ==="
+          ls -la src/ || echo "src folder not found!"
+
+      # This step comes next
       - name: Configure CMake
         working-directory: MossJS
         shell: bash
