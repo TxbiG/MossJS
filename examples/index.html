@@ -3,14 +3,64 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>MossJS Web</title>
+    <title>MossJS Web — Interactive Demo</title>
     <style>
-        html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #111; }
-        #moss { display: block; width: 100vw; height: 100vh; outline: none; }
+        :root { 
+            --bg-dark: #121214; 
+            --panel-bg: rgba(26, 26, 30, 0.85); 
+            --accent: #00ecb9; 
+            --text-light: #ececf1; 
+        }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-dark); font-family: -apple-system, system-ui, sans-serif; color: var(--text-light); }
+        
+        /* Global Top Navigation Bar */
+        nav { display: flex; align-items: center; background: #1a1a1e; padding: 12px 24px; border-bottom: 1px solid #2d2d34; z-index: 100; position: relative; height: 25px; }
+        nav h1 { margin: 0; font-size: 1.1rem; letter-spacing: 0.5px; font-weight: 700; color: var(--accent); margin-right: 30px; }
+        nav a { color: #9494a6; text-decoration: none; font-size: 0.9rem; margin-right: 20px; transition: color 0.2s; font-weight: 500; padding-bottom: 4px; }
+        nav a:hover, nav a.active { color: var(--text-light); }
+        nav a.active { border-bottom: 2px solid var(--accent); }
+
+        /* Responsive Canvas Viewport */
+        #canvas-container { position: absolute; top: 49px; left: 0; width: 100vw; height: calc(100vh - 49px); }
+        #moss { display: block; width: 100%; height: 100%; outline: none; }
+
+        /* Floating Diagnostic HUD Panel (Jolt Style) */
+        .hud-panel { position: absolute; top: 70px; right: 20px; background: var(--panel-bg); backdrop-filter: blur(12px); border: 1px solid #2d2d34; border-radius: 8px; padding: 16px; width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 10; }
+        .hud-panel h2 { margin: 0 0 12px 0; font-size: 0.85rem; text-transform: uppercase; color: #9494a6; letter-spacing: 1px; }
+        .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; font-family: monospace; }
+        .stat-val { color: var(--accent); }
     </style>
 </head>
 <body>
-    <canvas id="moss" tabindex="0"></canvas>
+
+    <!-- Unified Global Navigation Bar -->
+    <nav>
+        <h1>MOSS FRAMEWORK</h1>
+        <a href="./" class="active">🎮 Graphical Demos</a>
+        <a href="./performance/">📊 Performance Benchmarks</a>
+    </nav>
+
+    <!-- Canvas Wrapper Container -->
+    <div id="canvas-container">
+        <canvas id="moss" tabindex="0"></canvas>
+    </div>
+
+    <!-- Real-time Diagnostic HUD Panel -->
+    <div class="hud-panel">
+        <h2>Engine Monitor</h2>
+        <div class="stat-row">
+            <span>Framework:</span>
+            <span class="stat-val">v0.1.0</span>
+        </div>
+        <div class="stat-row">
+            <span>FPS:</span>
+            <span id="fps-counter" class="stat-val">0.0</span>
+        </div>
+        <div class="stat-row">
+            <span>Step Time:</span>
+            <span id="ms-counter" class="stat-val">0.00 ms</span>
+        </div>
+    </div>
 
     <script type="module">
         import createMossModule from "../dist/MossJS.js";
@@ -19,16 +69,48 @@
         const Moss = await createMoss(createMossModule);
         const canvas = document.querySelector("#moss");
 
+        // 🏗️ Make the workspace viewport fully responsive
         const app = new Moss.Application({
             title: "MossJS Web",
-            width: 1280,
-            height: 720,
+            width: window.innerWidth,
+            height: window.innerHeight - 49, // Subtract nav bar height
             canvas
+        });
+
+        // Handle browser window resize adjustments dynamically
+        window.addEventListener("resize", () => {
+            if (typeof app.resize === "function") {
+                app.resize(window.innerWidth, window.innerHeight - 49);
+            }
         });
 
         canvas.addEventListener("click", () => app.focus());
 
+        // 📊 Frame Tracking Variables
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let lastFpsUpdate = performance.now();
+        const fpsElement = document.getElementById("fps-counter");
+        const msElement = document.getElementById("ms-counter");
+
         Moss.start(app, (dt) => {
+            // Track delta-time performance metrics
+            frameCount++;
+            const now = performance.now();
+            const elapsed = now - lastTime;
+            lastTime = now;
+
+            // Update HUD values every 10 frames to prevent performance-killing layout thrashing
+            if (frameCount % 10 === 0) {
+                msElement.innerText = `${elapsed.toFixed(2)} ms`;
+                const fpsElapsed = now - lastFpsUpdate;
+                const currentFps = (1000 / (fpsElapsed / frameCount));
+                fpsElement.innerText = currentFps.toFixed(1);
+                
+                frameCount = 0;
+                lastFpsUpdate = now;
+            }
+
             // Shared Moss game update/render code goes here.
             void dt;
         });
