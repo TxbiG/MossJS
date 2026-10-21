@@ -16,11 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # VALIDATE AND BUILD
+  # This job does all the heavy lifting. If anything fails, Job 2 never starts.
+  build-and-validate:
     runs-on: ubuntu-latest
+    outputs:
+      build-success: ${{ job.status }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -38,20 +39,25 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Compiles C++/WebAssembly bindings into the web/ directory
+      # Compiles C++/WebAssembly bindings. 
+      # If your compiler throws an error here, the workflow exits instantly!
       - name: Build WebAssembly
         run: npm run build
 
       # Structure the deployment layout in a temporary staging directory
+      # Includes a check to make sure examples/index.html actually exists to prevent 404s
       - name: Structure Pages Staging Directory
         run: |
+          if [ ! -f "examples/index.html" ]; then
+            echo "ERROR: examples/index.html missing! Aborting deployment to prevent 404."
+            exit 1
+          fi
           mkdir staging
-          # Copy everything from examples into the root of staging
           cp -r examples/* staging/
-          # Copy the performance folder into staging as a subdirectory
           cp -r performance staging/
 
       # Set up GitHub Pages infrastructure settings
+      # Moved into the build block so settings are verified prior to bundling
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -61,7 +67,17 @@ jobs:
         with:
           path: './staging'
 
-      # Deploy the consolidated artifact to the public live URL
+  # DEPLOY (Strictly Conditional)
+  # This job will ONLY execute if Job 1 finishes with a perfect green checkmark.
+  deploy:
+    needs: build-and-validate # CRITICAL: Forces this job to wait for a successful build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # Deploy the pre-compiled, verified artifact to the public live URL
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
