@@ -1,6 +1,9 @@
 {
-  "name": "@moss-engine/mossjs",
+  "name": "@TxbiG/mossjs",
   "version": "0.4.0",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "Browser/WebAssembly bindings for the Moss game framework",
   "type": "module",
   "types": "./web/moss.d.ts",
