@@ -1,0 +1,41 @@
+name: Publish to GitHub Packages
+
+on:
+  release:
+    types: [published] # Triggers automatically when you create a GitHub Release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Gives the action permission to upload to GitHub Packages
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com' # Points setup-node to GitHub
+
+      # Emscripten setup for your emcmake scripts
+      - name: Setup Emscripten toolchain
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Runs cmake build scripts defined in package.json
+      - name: Build WebAssembly assets
+        run: npm run build
+
+      # Publishes scoped package using the built-in system token
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
