@@ -74,8 +74,8 @@ add_subdirectory(
 )
 
 add_executable(MossJS
-    src/MossJS.cpp
-    src/MossJS_Subsystems.cpp
+    "${CMAKE_CURRENT_LIST_DIR}/src/MossJS.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/MossJS_Subsystems.cpp"
 )
 
 target_compile_features(MossJS PRIVATE cxx_std_17)
