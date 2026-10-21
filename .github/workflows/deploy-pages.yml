@@ -1,0 +1,67 @@
+name: Deploy Examples and Performance to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # Deploy automatically when code is pushed to main
+
+# Set permissions required for deploying to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Ensure only one deployment runs at a time to prevent conflicts
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Emscripten toolchain
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Compiles C++/WebAssembly bindings into the web/ directory
+      - name: Build WebAssembly
+        run: npm run build
+
+      # Structure the deployment layout in a temporary staging directory
+      - name: Structure Pages Staging Directory
+        run: |
+          mkdir staging
+          # Copy everything from examples into the root of staging
+          cp -r examples/* staging/
+          # Copy the performance folder into staging as a subdirectory
+          cp -r performance staging/
+
+      # Set up GitHub Pages infrastructure settings
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Package the aggregated staging directory
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './staging'
+
+      # Deploy the consolidated artifact to the public live URL
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
