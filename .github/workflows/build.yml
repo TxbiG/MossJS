@@ -24,7 +24,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v16
 
       - name: Verify Emscripten
         run: |
