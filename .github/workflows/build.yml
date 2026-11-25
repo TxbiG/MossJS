@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout MossJS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: MossJS
 
       - name: Checkout Moss (dependency)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: TxbiG/Moss
           path: Moss
