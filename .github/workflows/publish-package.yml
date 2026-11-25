@@ -23,7 +23,7 @@ jobs:
 
       # Emscripten setup for your emcmake scripts
       - name: Setup Emscripten toolchain
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v16
         with:
           version: 'latest'
 
