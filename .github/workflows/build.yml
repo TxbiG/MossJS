@@ -57,7 +57,7 @@ jobs:
         run: cmake --build build-wasm --parallel
 
       - name: Upload WebAssembly build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MossJS-WASM
           path: |
